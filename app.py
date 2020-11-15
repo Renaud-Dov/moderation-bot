@@ -7,6 +7,7 @@ intents=discord.Intents.all()
 client = commands.Bot(command_prefix='?',intents=intents)
 @client.event
 async def on_member_join(member):
+    print(member)
     await member.add_roles(discord.utils.get(member.guild.roles, id=readGuild(member.guild.id)["role"]))
     await member.send("Coucou et bienvenue sur le serveur EPITA E1.\n Reste respecteux envers les autres, sous peine de te faire bannir. Tu as le rôle @Imposteur par défaut, si il s'agit d'une erreur, contacte un modo")
 
@@ -26,17 +27,16 @@ async def change(context,role):
 
 @client.event
 async def on_guild_join(guild):  # readGuild(message.guild.id)
-    rolebot = discord.utils.get(guild.roles, name="CheckStudents").id
-    createGuild(guild.id, rolebot)
+    createGuild(guild.id)
 
 
 @client.event
 async def on_guild_remove(guild):
     removeGuild(guild.id)
 
-def createGuild(guildID, rolebot):
+def createGuild(guildID):
     with open("database/{}.json".format(guildID), "x") as outfile:
-        json.dump({"role":rolebot}, outfile)
+        json.dump({"role":0}, outfile)
 
 
 def removeGuild(guildID):
