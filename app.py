@@ -70,7 +70,7 @@ async def cadeau(context, *args):
             if a not in eucadeau and a!=member:
                 eucadeau.append(a)
                 break
-        message+="\n <@{}> offre un cadeau à <@{}>".format(member,a)
+        message+="\n {} **offre un cadeau à** {}".format(member,a)
     await context.message.channel.send(message)
         
 
