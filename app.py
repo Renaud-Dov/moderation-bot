@@ -55,6 +55,8 @@ def editGuild(guildID, data):
     with open("database/{}.json".format(guildID), "w") as outfile:
         json.dump(data, outfile)
 
+
+@client.command()
 async def cadeau(context, *args):
     cadeau=list()
     for i in args:
