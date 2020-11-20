@@ -1,10 +1,12 @@
 import discord,json,os
 from discord.ext import commands
 from sys import argv
+import random
 
 token = argv[1]
 intents=discord.Intents.all()
 client = commands.Bot(command_prefix='?',intents=intents)
+
 @client.event
 async def on_member_join(member):
     print(member)
@@ -20,13 +22,19 @@ def convert(role: str):
 
 @client.command()
 async def change(context,role):
-    role=convert(role)
-    context.guild
-    editGuild(context.guild.id, {'role':role})
+    data=readGuild(context.guild.id)
+    data['role']=convert(role)
+    editGuild(context.guild.id, data)
     
+@client.command()
+async def phrase(context,*args):
+    data=readGuild(context.guild.id)
+    data["phrase"]=" ".join(args)
+    editGuild(context.guild.id, data)
+
 
 @client.event
-async def on_guild_join(guild):  # readGuild(message.guild.id)
+async def on_guild_join(guild):
     createGuild(guild.id)
 
 
@@ -47,6 +55,22 @@ def editGuild(guildID, data):
     with open("database/{}.json".format(guildID), "w") as outfile:
         json.dump(data, outfile)
 
+async def cadeau(context, *args):
+    cadeau=list()
+    for i in args:
+        cadeau.append(i)
+
+    message=""
+    eucadeau=list()
+    for member in cadeau:
+        while True:
+            a=random.choice(cadeau)
+            if a not in eucadeau and a!=member:
+                eucadeau.append(a)
+                break
+        message+="\n <@{}> offre un cadeau à <@{}>".format(member,a)
+    await context.message.channel.send(message)
+        
 
 def readGuild(guild):
     with open('database/{}.json'.format(guild), 'r') as outfile:
@@ -54,3 +78,4 @@ def readGuild(guild):
 
 client.remove_command('help')
 client.run(token)
+client.add_command(cadeau)
