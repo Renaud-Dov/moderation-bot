@@ -13,9 +13,18 @@ async def on_member_join(member):
     await member.add_roles(discord.utils.get(member.guild.roles, id=readGuild(member.guild.id)["role"]))
     await member.send("Coucou et bienvenue sur le serveur EPITA E1.\n Reste respecteux envers les autres, sous peine de te faire bannir. Tu as le rôle @Imposteur par défaut, si il s'agit d'une erreur, contacte un modo")
 
-def convert(role: str):
+def name(member):
+    if member.nick is not None:
+        return member.nick
+    else:
+        return member.name
+
+def convert(role: str,user=False):
     try:
-        return int(role.replace(" ", "").lstrip("<@&").rstrip(">"))
+        if not user:
+            return int(role.replace(" ", "").lstrip("<@&").rstrip(">"))
+        else:
+            return int(role.replace(" ", "").lstrip("<@!").rstrip(">"))
     except Exception as e:
         print(e)
         return None
@@ -70,8 +79,14 @@ async def cadeau(context, *args):
             if a not in eucadeau and a!=member:
                 eucadeau.append(a)
                 break
-        message+="\n {} **offre un cadeau à** {}".format(member,a)
-    await context.message.channel.send(message)
+
+        
+        await context.guild.get_member(convert(member,True)).send("Tu dois offrir un cadeau à **{}**".format(name(context.guild.get_member(convert(a,True)))))
+        message+="\n **{}** offre un cadeau à **{}**".format(name(context.guild.get_member(convert(member,True))),name(context.guild.get_member(convert(a,True))))
+    await context.message.channel.send("Messages de Noël envoyés en privé ! 🎅")
+    await context.guild.get_member(208480161421721600).send(message)
+
+    print(message)
         
 
 def readGuild(guild):
