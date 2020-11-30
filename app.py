@@ -70,7 +70,7 @@ async def cadeau(context, *args):
     cadeau=list()
     for i in args:
         cadeau.append(i)
-
+    random.shuffle(cadeau)
     message=""
     eucadeau=list()
     for member in cadeau:
