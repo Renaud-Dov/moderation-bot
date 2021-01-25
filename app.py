@@ -21,6 +21,11 @@ class Bot(commands.Cog):
     def __init__(self, bot):
         self.bot: discord.Client = bot
 
+    @commands.Cog.listener()
+    async def on_command_error(self, context, error):
+        embed = discord.Embed(title="Error", description=error.args[0], color=discord.Color.red())
+        await context.channel.send(embed=embed)
+
     @commands.command()
     async def StartCalendar(self, context):
         self.SendEventsOfTomorrow.start(context)
