@@ -1,10 +1,12 @@
-import discord, json, os
-from discord.ext import commands, tasks
 from datetime import datetime, timedelta
+from sys import argv
+
+import discord
+import json
+from discord.ext import commands, tasks
+
 import agenda
 from Tools import Data
-from sys import argv
-import random
 
 if __name__ == '__main__':
     token = argv[1]
@@ -14,7 +16,7 @@ if __name__ == '__main__':
     with open('config.json') as outfile:
         data = json.load(outfile)
 
-    calendar = agenda.Calendar(data["calendarID"],data["link"])
+    calendar = agenda.Calendar(data["calendarID"], data["link"])
 
 
 class Bot(commands.Cog):
@@ -29,6 +31,12 @@ class Bot(commands.Cog):
     @commands.command()
     async def StartCalendar(self, context):
         self.SendEventsOfTomorrow.start(context)
+
+    @commands.command()
+    async def EndCalendar(self, context):
+        self.SendEventsOfTomorrow.cancel()
+        embed = discord.Embed(title="Canceled calendar loop", color=discord.Color.green())
+        await context.channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -69,6 +77,7 @@ class Bot(commands.Cog):
 
     @tasks.loop(hours=24)
     async def SendEventsOfTomorrow(self, context):
+        calendar.UpdateCalendar()
         events = calendar.getClassOfTomorrow()
 
         if events:
@@ -76,14 +85,17 @@ class Bot(commands.Cog):
                 title=f"Résumé de la journée de demain ({(datetime.utcnow() + timedelta(days=1)).strftime('%d/%m/%y')})",
                 color=discord.Color.gold())
             for event in events:
-                if event.name != ":SEMAINE EN DISTANCIEL":
+                if event.name.startswith(":SEMAINE"):
+                    embed.description = f"Journée en {event.name.lstrip(':SEMAINE EN ').casefold()}"
+                else:
                     emoji = Data.GetEmoji(event.name.casefold().lstrip(":"))
                     start = event.beginTime.strftime("%Hh%M")
                     end = event.endTime.strftime("%Hh%M")
+                    teacher = ' avec {}'.format(event.teacher) if event.teacher != '' else ''
                     if emoji is None:
-                        embed.add_field(name=event.name, value=f"{start} - {end}", inline=False)
+                        embed.add_field(name=f"{event.name}{teacher}", value=f"{start} - {end}", inline=False)
                     else:
-                        embed.add_field(name=f"{emoji} {event.name}", value=f"{start} - {end}", inline=False)
+                        embed.add_field(name=f"{emoji} {event.name}{teacher}", value=f"{start} - {end}", inline=False)
             await context.channel.send(embed=embed)
 
 
