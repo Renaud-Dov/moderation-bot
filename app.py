@@ -85,17 +85,15 @@ class Bot(commands.Cog):
                 title=f"Résumé de la journée de demain ({(datetime.utcnow() + timedelta(days=1)).strftime('%d/%m/%y')})",
                 color=discord.Color.gold())
             for event in events:
-                if event.name.startswith(":SEMAINE"):
-                    embed.description = f"Journée en {event.name.lstrip(':SEMAINE EN ').casefold()}"
+                if event.name.startswith("SEMAINE"):
+                    embed.description = f"Journée en {event.name.lstrip('SEMAINE EN ').casefold()}"
                 else:
-                    emoji = Data.GetEmoji(event.name.casefold().lstrip(":"))
+                    emoji = Data.GetEmoji(event.name.casefold()) if not None else ''
                     start = event.beginTime.strftime("%Hh%M")
                     end = event.endTime.strftime("%Hh%M")
                     teacher = ' avec {}'.format(event.teacher) if event.teacher != '' else ''
-                    if emoji is None:
-                        embed.add_field(name=f"{event.name}{teacher}", value=f"{start} - {end}", inline=False)
-                    else:
-                        embed.add_field(name=f"{emoji} {event.name}{teacher}", value=f"{start} - {end}", inline=False)
+
+                    embed.add_field(name=f"{emoji}{event.name}{teacher}", value=f"{start} - {end}", inline=False)
             await context.channel.send(embed=embed)
 
 

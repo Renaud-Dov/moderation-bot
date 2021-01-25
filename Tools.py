@@ -24,10 +24,9 @@ class Data:
 
     @staticmethod
     def GetEmoji(cours: str):
-        emoji = {"algorithmique": "💽", "mathématiques": "🧮", "japonais": "🏮", "coreen": None,
-                 "te": "✍", "electronique": "🔋", "physique": "🍎", "tim": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "programmation": "💽",
+        emoji = {"algorithmique": "💽 ", "mathématiques": "🧮 ", "japonais": "🏮 ",
+                 "te": "✍ ", "electronique": "🔋 ", "physique": "🍎 ", "tim": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "programmation": "💽 ",
                  "cie": "🏴󠁧󠁢󠁥󠁮󠁧󠁿"}
-        if cours in emoji:
-            return emoji[cours]
-        else:
-            return None
+
+        return emoji.get(cours, None)
+

@@ -19,13 +19,14 @@ class Event:
                                                             minute=int(time[11:13]), second=int(time[13:15]))
         for i in event:
             if i.startswith("SUMMARY:"):
-                self.name = i.lstrip("SUMMARY")
+                self.name = i.lstrip("SUMMARY").lstrip(":")
             elif i.startswith("DESCRIPTION"):
-                self.teacher = i.lstrip("DESCRIPTION:Profs :")
+                self.teacher = i.lstrip("DESCRIPTION:Profs").lstrip(" : ")
 
 
 class Calendar:
     def UpdateCalendar(self):
+        self.Calendar = list()
         r = requests.get(self.link)
         if not r.ok:
             raise Exception("Impossible to get .ics calendar")
@@ -60,4 +61,6 @@ if __name__ == "__main__":
         data = json.load(outfile)
 
     calendar = Calendar(data["calendarID"], data["link"])
-    # a = calendar.Calendar
+    values = calendar.getClassOfTomorrow()
+    for i in values:
+        print(i.name, i.teacher)
