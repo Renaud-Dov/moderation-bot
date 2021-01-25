@@ -1,7 +1,5 @@
 import datetime
 import requests
-import icalendar
-import ics
 import re
 
 
