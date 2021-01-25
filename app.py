@@ -14,7 +14,7 @@ if __name__ == '__main__':
     with open('config.json') as outfile:
         data = json.load(outfile)
 
-    calendar = agenda.Calendar(data["calendarID"], data["token"], data["credentials"])
+    calendar = agenda.Calendar(data["calendarID"],data["link"])
 
 
 class Bot(commands.Cog):
@@ -76,14 +76,14 @@ class Bot(commands.Cog):
                 title=f"Résumé de la journée de demain ({(datetime.utcnow() + timedelta(days=1)).strftime('%d/%m/%y')})",
                 color=discord.Color.gold())
             for event in events:
-                if event["summary"] != "SEMAINE EN DISTANCIEL":
-                    emoji = Data.GetEmoji(event["summary"].casefold())
-                    start = datetime.fromisoformat(event["start"]["dateTime"]).strftime("%Hh%M")
-                    end = datetime.fromisoformat(event["end"]["dateTime"]).strftime("%Hh%M")
+                if event.name != ":SEMAINE EN DISTANCIEL":
+                    emoji = Data.GetEmoji(event.name.casefold().lstrip(":"))
+                    start = event.beginTime.strftime("%Hh%M")
+                    end = event.endTime.strftime("%Hh%M")
                     if emoji is None:
-                        embed.add_field(name=event["summary"], value=f"{start} - {end}", inline=False)
+                        embed.add_field(name=event.name, value=f"{start} - {end}", inline=False)
                     else:
-                        embed.add_field(name=f"{emoji} {event['summary']}", value=f"{start} - {end}", inline=False)
+                        embed.add_field(name=f"{emoji} {event.name}", value=f"{start} - {end}", inline=False)
             await context.channel.send(embed=embed)
 
 

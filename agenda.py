@@ -1,52 +1,50 @@
 import datetime
-import pickle
-import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+import requests
+import icalendar
+import ics
+import re
 
-# If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+
+class Event:
+    def __init__(self, event: list):
+
+        time = event[2].lstrip("DTSTART;TZID=Europe/Paris:")
+        self.beginTime = datetime.datetime(year=int(time[0:4]), month=int(time[4:6]), day=int(time[6:8]),
+                                           hour=int(time[9:11]),
+                                           minute=int(time[11:13]), second=int(time[13:15]))
+        time = event[3].lstrip("DTEND;TZID=Europe/Paris:")
+        self.endTime = datetime.datetime(year=int(time[0:4]), month=int(time[4:6]), day=int(time[6:8]),
+                                         hour=int(time[9:11]),
+                                         minute=int(time[11:13]), second=int(time[13:15]))
+        for i in event:
+            if i.startswith("SUMMARY:"):
+                self.name = i.lstrip("SUMMARY")
 
 
 class Calendar:
-    def __init__(self, calendarID, tokenID, credentials):
-        self.calendarID = calendarID
-        creds = None
-        # The file token.pickle stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first
-        # time.
-        if os.path.exists(tokenID):
-            with open(tokenID, 'rb') as token:
-                creds = pickle.load(token)
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    credentials, SCOPES)
-                creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open(tokenID, 'wb') as token:
-                pickle.dump(creds, token)
+    def getCalendar(self):
+        r = requests.get(self.link)
+        for event in re.findall(r'BEGIN:VEVENT\n((.|\n)*?)\nEND:VEVENT', r.text, re.MULTILINE):
+            self.Calendar.append(Event(event[0].split('\n')))
 
-        self.service = build('calendar', 'v3', credentials=creds)
+        self.Calendar.sort(key=lambda x: x.beginTime)
+
+    def __init__(self, name, link):
+        self.Calendar = list()
+        self.name = name
+        self.link = link
+        self.getCalendar()
 
     def __GetEventsOfDay(self, day: datetime.datetime):
-        now = day.isoformat() + 'Z'
-        tomorrow = (day + datetime.timedelta(hours=12)).isoformat() + 'Z'
-        events_result = self.service.events().list(
-            calendarId=self.calendarID,
-            timeMin=now, timeMax=tomorrow,
-            maxResults=15, singleEvents=True,
-            orderBy='startTime').execute()
-
-        return events_result.get('items', [])
+        i = 0
+        result = list()
+        while self.Calendar[i].beginTime.date() <= day.date():
+            result.append(self.Calendar[i])
+            i += 1
+        return result
 
     def getClassOfTheDay(self):
-
-        return self.__GetEventsOfDay(datetime.datetime.utcnow().replace(hour=7))
+        return self.__GetEventsOfDay(datetime.datetime.utcnow())
 
     def getClassOfTomorrow(self):
-        return self.__GetEventsOfDay(datetime.datetime.utcnow().replace(hour=7) + datetime.timedelta(days=1))
+        return self.__GetEventsOfDay(datetime.datetime.utcnow() + datetime.timedelta(days=1))
