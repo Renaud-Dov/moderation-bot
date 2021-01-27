@@ -11,7 +11,7 @@ from Tools import Data
 if __name__ == '__main__':
     token = argv[1]
     intents = discord.Intents.all()
-    client = commands.Bot(command_prefix='?', intents=intents)
+    client = commands.Bot(command_prefix='?t ', intents=intents)
 
     with open('config.json') as outfile:
         data = json.load(outfile)
@@ -58,6 +58,10 @@ class Bot(commands.Cog):
             data['role'] = context.message.role_mentions[0]
             Data.editGuild(context.guild.id, data)
 
+    @commands.command(aliases=["agenda,calendar"])
+    async def Calendar(self, context):
+        await self.SendEventsOfTomorrow(context)
+
     @commands.command()
     async def phrase(self, context, args):
         data = Data.readGuild(context.guild.id)
@@ -75,8 +79,7 @@ class Bot(commands.Cog):
     async def on_guild_remove(self, guild):
         Data.removeGuild(guild.id)
 
-    @tasks.loop(hours=24)
-    async def SendEventsOfTomorrow(self, context):
+    async def sendEvents(self, context):
         calendar.UpdateCalendar()
         events = calendar.getClassOfTomorrow()
 
@@ -95,6 +98,10 @@ class Bot(commands.Cog):
 
                     embed.add_field(name=f"{emoji}{event.name}{teacher}", value=f"{start} - {end}", inline=False)
             await context.channel.send(embed=embed)
+
+    @tasks.loop(hours=24)
+    async def SendEventsOfTomorrow(self, context):
+        await self.SendEventsOfTomorrow(context)
 
 
 client.remove_command('help')
