@@ -60,7 +60,7 @@ class Bot(commands.Cog):
 
     @commands.command(aliases=["agenda,calendar"])
     async def Calendar(self, context):
-        await self.SendEventsOfTomorrow(context)
+        await self.sendEvents(context)
 
     @commands.command()
     async def phrase(self, context, args):
@@ -101,7 +101,7 @@ class Bot(commands.Cog):
 
     @tasks.loop(hours=24)
     async def SendEventsOfTomorrow(self, context):
-        await self.SendEventsOfTomorrow(context)
+        await self.sendEvents(context)
 
 
 client.remove_command('help')
